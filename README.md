@@ -1,6 +1,6 @@
 # Unilink
 
-Este é um projeto de site voltado para a exposição de projetos de extensão em universidades, para tornar informações sobre essas iniciativas mais acessíveis e centralizadas. Este repositório contempla o frontend da aplicação. O repositório do backend está disponível [aqui](joaoloss/unilink-backend)
+Este é um projeto de site voltado para a exposição de projetos de extensão em universidades, para tornar informações sobre essas iniciativas mais acessíveis e centralizadas. Este repositório contempla o frontend da aplicação. O repositório do backend está disponível aqui: [joaoloss/unilink-backend](https://github.com/joaoloss/unilink-backend
 
 ## Organização do Projeto
 
