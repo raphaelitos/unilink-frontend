@@ -46,3 +46,8 @@ npm run dev
 ```
 http://localhost:3000
 ```
+
+## Desenvolvedores
+* [Conrado Antoniazi dos Santos](https://github.com/ConradoAntoniazi)
+* [João Pedro Pereira Loss](https://github.com/joaoloss)
+* [Raphael Correia Dornelas](https://github.com/raphaelitos)
