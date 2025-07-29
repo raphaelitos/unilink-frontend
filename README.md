@@ -8,7 +8,6 @@ Este é um projeto de site voltado para a exposição de projetos de extensão e
 * **Estilização:** Baseado em [Tailwind CSS](https://tailwindcss.com/) com componentes de [shadcn/ui](https://ui.shadcn.com/)
 * **Versionamento:** Controlado com [GitHub](https://github.com/)
 * **Integração contínua:** Automatizado via [GitHub Actions](https://docs.github.com/pt/actions)
-* **Documentação do código:** Gerada com [TypeDoc](https://typedoc.org/)
 
 ## Documentação do Código
 
