@@ -4,6 +4,10 @@ O UniLink foi desenvolvido com o objetivo de centralizar e divulgar informaçõe
 
 Este repositório contempla o frontend da aplicação. O repositório do backend está disponível [aqui](https://github.com/joaoloss/unilink-backend)
 
+## Diagrama UML
+
+![UML](imgs/uml.png)
+
 ## Organização do Projeto
 
 * **Build:** Realizado com [Next.js](https://nextjs.org/)
