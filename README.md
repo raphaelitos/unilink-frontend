@@ -1,4 +1,4 @@
-# Unilink
+# UNILINK
 ## Descrição
 O UniLink foi desenvolvido com o objetivo de centralizar e divulgar informações sobre os projetos de extensão da UFES - Goiabeiras, para que estudantes descubram e conheçam, mais facilmente, as iniciativas disponíveis. A plataforma oferece uma visualização simples e intuitiva de todos os projetos, no qual o usuário poderá buscar por nome, filtrar por centro de ensino, verificar quais projetos estão com inscrições abertas e explorar as opções por tags — palavras-chave que identificam o nicho ou característica principal de cada projeto (como "tecnologia", "saúde", "educação", entre outros). O foco é proporcionar uma ferramenta rápida e acessível para que os alunos encontrem informações essenciais sobre os projetos e possam participar ativamente das oportunidades oferecidas pela universidade.
 
