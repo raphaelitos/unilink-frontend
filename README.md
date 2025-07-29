@@ -9,7 +9,6 @@ Este repositório contempla o frontend da aplicação. O repositório do backend
 * **Build:** Realizado com [Next.js](https://nextjs.org/)
 * **Estilização:** Baseado em [Tailwind CSS](https://tailwindcss.com/) com componentes de [shadcn/ui](https://ui.shadcn.com/)
 * **Versionamento:** Controlado com [GitHub](https://github.com/)
-* **Integração contínua:** Automatizado via [GitHub Actions](https://docs.github.com/pt/actions)
 
 ## Documentação do Código
 
