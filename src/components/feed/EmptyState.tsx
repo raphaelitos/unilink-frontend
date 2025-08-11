@@ -8,7 +8,7 @@ export function EmptyState() {
       </div>
       <h3 className="text-xl font-semibold text-foreground mb-2">No posts yet</h3>
       <p className="text-muted-foreground max-w-md">
-        Extension projects haven't shared any updates yet. Check back later to see the latest research and project
+        Extension projects havent shared any updates yet. Check back later to see the latest research and project
         developments.
       </p>
     </div>
