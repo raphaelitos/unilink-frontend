@@ -1,5 +1,3 @@
-"use client"
-
 import { useRouter } from "next/router"
 import { Feed } from "@/components/feed/Feed"
 import type { Post } from "@/types"
