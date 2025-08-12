@@ -4,6 +4,12 @@ export interface Project {
   link: string
 }
 
+export interface Tag {
+  id: string
+  text: string
+  color: string
+}
+
 export interface Post {
   id: string
   project: Project
