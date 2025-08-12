@@ -16,4 +16,5 @@ export interface Post {
   caption: string
   imageUrl?: string
   createdAt: string
+  tags?: Tag[]
 }
