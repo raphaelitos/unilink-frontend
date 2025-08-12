@@ -15,6 +15,11 @@ const MOCK_POSTS: Post[] = [
       "Excited to announce our breakthrough in natural language processing! Our new model achieves state-of-the-art results on multiple benchmarks. This research will help advance conversational AI systems.",
     imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop",
     createdAt: "2024-01-15T10:30:00Z",
+    tags: [
+      { id: "t1", text: "tecnologia", color: "#E3F2FD" },
+      { id: "t2", text: "IA",         color: "#FFF3E0" },
+      { id: "t3", text: "pesquisa",   color: "#E8F5E9" },
+    ],
   },
   {
     id: "2",
@@ -26,6 +31,11 @@ const MOCK_POSTS: Post[] = [
     caption:
       "Our solar panel efficiency project has reached a major milestone! We've successfully increased energy conversion rates by 15% using innovative materials.",
     createdAt: "2024-01-14T14:20:00Z",
+    tags: [
+      { id: "t4", text: "sustentabilidade", color: "#E8F5E9" },
+      { id: "t5", text: "energia",          color: "#FFFDE7" },
+      { id: "t6", text: "bolsa",            color: "#F3E5F5" },
+    ],
   },
   {
     id: "3",
@@ -38,6 +48,11 @@ const MOCK_POSTS: Post[] = [
       "Launching our new telemedicine platform next month! This will provide accessible healthcare solutions to underserved communities. Beta testing has shown promising results.",
     imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&h=400&fit=crop",
     createdAt: "2024-01-13T09:15:00Z",
+    tags: [
+      { id: "t7", text: "saúde",      color: "#E3F2FD" },
+      { id: "t8", text: "plataforma", color: "#F1F8E9" },
+      { id: "t9", text: "voluntário", color: "#FFF8E1" },
+    ],
   },
   {
     id: "4",
@@ -49,6 +64,10 @@ const MOCK_POSTS: Post[] = [
     caption:
       "Our autonomous navigation system won first place at the International Robotics Competition! Proud of the team's dedication and innovative approach.",
     createdAt: "2024-01-12T16:45:00Z",
+    tags: [
+      { id: "t10", text: "robótica",  color: "#E0F2F1" },
+      { id: "t11", text: "competição", color: "#FFEBEE" },
+    ],
   },
   {
     id: "5",
@@ -61,6 +80,11 @@ const MOCK_POSTS: Post[] = [
       "Published our latest paper on decentralized identity systems. This research addresses privacy concerns in digital identity verification.",
     imageUrl: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=400&fit=crop",
     createdAt: "2024-01-11T11:30:00Z",
+    tags: [
+      { id: "t12", text: "blockchain", color: "#EDE7F6" },
+      { id: "t13", text: "privacidade", color: "#F9FBE7" },
+      { id: "t14", text: "pesquisa",    color: "#E3F2FD" },
+    ],
   },
 ]
 

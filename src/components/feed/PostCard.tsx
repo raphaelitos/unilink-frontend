@@ -4,6 +4,7 @@ import { PostHeader } from "./PostHeader"
 import { PostBody } from "./PostBody"
 import { PostMedia } from "./PostMedia"
 import { Separator } from "@/components/ui/separator"
+import { TagPill } from "./TagPill"
 
 interface PostCardProps {
   post: Post
@@ -16,6 +17,15 @@ export function PostCard({ post }: PostCardProps) {
         <PostHeader project={post.project} createdAt={post.createdAt} />
         <Separator className="my-4" />
         <PostBody caption={post.caption} />
+        
+        {post.tags && post.tags.length > 0 && (
+         <div className="mt-3 flex flex-wrap gap-2">
+           {post.tags.map((t) => (
+             <TagPill key={t.id} tag={t} />
+           ))}
+         </div>
+       )}
+        
         {post.imageUrl && (
           <>
             <div className="mt-4">
