@@ -52,7 +52,7 @@ export default function LoginPage() {
       await login(payload, true /* useExtendedBody */);
 
       toast({ title: "Login realizado!" });
-      router.push("/feed");
+      router.push("/");
     } catch (error: unknown) {
       let message: string;
 
