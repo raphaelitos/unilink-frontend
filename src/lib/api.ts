@@ -39,3 +39,5 @@ export async function updateProject(
   const { data } = await api.put<ProjectResponse>(`/api/projects/${id}`, body);
   return data;
 }
+
+export type ProjectUpdateRequest = CreateProjectRequest;
