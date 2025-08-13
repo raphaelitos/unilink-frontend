@@ -90,7 +90,7 @@ export default function LoginPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Login</h1>
             <p className="text-gray-600">Entre com suas credenciais para acessar sua conta</p>
           </div>
 
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-900">
-                  Email Address
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -111,7 +111,7 @@ export default function LoginPage() {
                     ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                     : "border-gray-300 focus:border-primary focus:ring-primary"
                     }`}
-                  placeholder="you@domain.com"
+                  placeholder="seuNome@dominio.com"
                 />
                 {errors.email && (
                   <p className="text-sm text-red-600" role="alert">
@@ -122,7 +122,7 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-900">
-                  Password
+                  Senha
                 </Label>
                 <Input
                   id="password"
@@ -134,7 +134,7 @@ export default function LoginPage() {
                     ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                     : "border-gray-300 focus:border-primary focus:ring-primary"
                     }`}
-                  placeholder="••••••••"
+                  placeholder="suaSenha123"
                 />
                 {errors.password && (
                   <p className="text-sm text-red-600" role="alert">
@@ -148,14 +148,25 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 className="w-full bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
               >
-                {isSubmitting ? "Signing In..." : "Sign In"}
+                {isSubmitting ? "Entrando..." : "Entrar"}
               </Button>
             </form>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-500 mt-4">
+                Novo aqui?{' '}
+                <Link href="/signup" className="text-primary hover:underline">
+                  Crie uma conta
+                </Link>{' '}
+              </p>
+            </div>
+            
+
           </div>
 
           <div className="text-center">
             <Link href="/" className="text-primary hover:text-primary/80 text-sm">
-              ← Back to Home
+              ← Voltar
             </Link>
           </div>
         </div>
