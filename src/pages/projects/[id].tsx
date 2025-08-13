@@ -80,12 +80,14 @@ export default function ProjectDetailPage() {
 
             {/* Badge "Inscrições abertas!" */}
             {project.openForApplications && (
-              <Badge
-                className="mx-auto mt-4 block"
-                aria-label="Inscrições abertas!"
-              >
-                Inscrições abertas!
-              </Badge>
+              <div className="flex justify-center mt-4">
+                <Badge
+                  className="inline-flex items-center px-3 py-1 w-fit"
+                  aria-label="Inscrições abertas!"
+                >
+                  Inscrições abertas!
+                </Badge>
+              </div>
             )}
 
             <Separator className="my-8" />
@@ -137,7 +139,7 @@ export default function ProjectDetailPage() {
                 className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
                 aria-label="Voltar para a página inicial de projetos"
               >
-                Voltar para projetos
+                Ver outros projetos
               </Link>
             </div>
           </>
