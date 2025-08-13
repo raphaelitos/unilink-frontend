@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { createUser } from "@/lib/users";
 import { login } from "@/lib/auth";
 
-// ======= Zod schema (mantém mensagens do layout original) =======
 const signupSchema = z
   .object({
     name: z.string().min(1, "Name is required"),
