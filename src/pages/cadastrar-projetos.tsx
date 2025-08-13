@@ -27,8 +27,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/components/ui/utils"; // se não existir, troque por uma função util local
+import { useToast } from "@/hooks/use-toast";
 
 // -----------------------------
 // Zod schema
