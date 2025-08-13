@@ -16,9 +16,12 @@ export const TagChip = React.memo(function TagChip({
   colorHex,
 }: Props) {
   const bg = colorHex ? withAlpha(colorHex, active ? 0.25 : 0.15) : undefined;
-  const textColor =
+  {/*
+    const textColor =
     colorHex ? (getReadableTextColor(colorHex) === "white" ? "white" : "black") : undefined;
-  const borderColor = colorHex ? withAlpha(colorHex, 0.35) : undefined;
+    */}
+    const textColor = "black";
+    const borderColor = colorHex ? withAlpha(colorHex, 0.35) : undefined;
 
   return (
     <Button

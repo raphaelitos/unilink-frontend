@@ -8,6 +8,9 @@ import { ProjectsSkeleton, TagsSkeleton } from "@/components/Skeletons";
 import type { UUID } from "@/types";
 import { Separator } from "@/components/ui/separator";
 import { centers, tags, projects } from "@/lib/mock";
+import { Button } from "@/components/ui/button"
+import { User } from "lucide-react"
+import Link from "next/link"
 
 export default function HomePage() {
   const [selectedTagIds, setSelectedTagIds] = React.useState<UUID[]>([]);
@@ -68,6 +71,16 @@ export default function HomePage() {
               onToggleOpenOnly={() => setOpenOnly((v) => !v)}
             />
           )}
+
+          <header className="flex justify-end p-4">
+            <Link href="/login">
+              <Button variant="outline">
+                <User className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </Link>
+          </header>
+
         </section>
 
         <Separator className="my-6" />

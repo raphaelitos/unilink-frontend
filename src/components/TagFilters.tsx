@@ -25,6 +25,7 @@ export const TagFilters: React.FC<Props> = ({
         <h3 className="text-base font-semibold">Filtros</h3>
 
         {/* Switch opcional — apenas UI */}
+        {/*
         <div className="flex items-center gap-2">
           <Switch
             id="open-only"
@@ -36,6 +37,7 @@ export const TagFilters: React.FC<Props> = ({
             Inscrições abertas
           </Label>
         </div>
+        */}
       </div>
 
       <div
