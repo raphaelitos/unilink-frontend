@@ -1,190 +1,172 @@
-// src/pages/login.tsx
-import { useState } from 'react'
-import { useRouter } from 'next/router'
+import * as React from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
-interface FormData {
-  email: string
-  password: string
-}
+import { AxiosError } from "axios";
 
-interface FormErrors {
-  email?: string
-  password?: string
-  general?: string
-}
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { login } from "@/lib/auth";
+import type { LoginBodyExtended } from "@/types/auth";
 
-export default function Login() {
-  const router = useRouter()
-  const [formData, setFormData] = useState<FormData>({
-    email: '',
-    password: ''
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [isLoading, setIsLoading] = useState(false)
+// Validação dos campos do formulário
+const loginSchema = z.object({
+  email: z.string().email("Informe um e-mail válido"),
+  password: z.string().min(1, "A senha é obrigatória"),
+});
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+type LoginFormValues = z.infer<typeof loginSchema>;
 
-  const validateForm = (): FormErrors => {
-    const newErrors: FormErrors = {}
+export default function LoginPage() {
+  const router = useRouter();
+  const { toast } = useToast();
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
-    }
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    defaultValues: { email: "", password: "" },
+  });
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    }
+  const onSubmit = async (values: LoginFormValues) => {
+    try {
+      const payload: LoginBodyExtended = {
+        name: "-",
+        role: "PROJECT_ADMIN",
+        validForCreation: true,
+        email: values.email,
+        password: values.password,
+      };
 
-    return newErrors
-  }
+      await login(payload, true /* useExtendedBody */);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrors({})
-    
-    const formErrors = validateForm()
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors)
-      return
-    }
+      toast({ title: "Login realizado!" });
+      router.push("/feed");
+    } catch (error: unknown) {
+      let message: string;
 
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      // Simulate authentication logic
-      if (formData.email === 'user@example.com' && formData.password === 'password') {
-        // Create dummy JWT token
-        const dummyToken = btoa(JSON.stringify({
-          email: formData.email,
-          exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-          iat: Date.now()
-        }))
-
-        // Store in cookie (using document.cookie for simplicity)
-        document.cookie = `auth-token=${dummyToken}; path=/; max-age=86400; SameSite=Lax`
-        
-        // Redirect to feed
-        router.push('/feed')
+      if (error instanceof AxiosError) {
+        // Erro vindo do Axios
+        message =
+          (error.response?.data as { message?: string })?.message ??
+          error.message ??
+          "Não foi possível autenticar. Verifique suas credenciais.";
+      } else if (error instanceof Error) {
+        // Erro genérico
+        message = error.message;
       } else {
-        setErrors({ general: 'Invalid email or password' })
+        message = "Não foi possível autenticar. Verifique suas credenciais.";
       }
-      setIsLoading(false)
-    }, 1000)
-  }
 
-  const handleInputChange = (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }))
-    
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: undefined
-      }))
+      setError("email", { type: "server", message: undefined });
+      setError("password", { type: "server", message: undefined });
+
+      toast({
+        variant: "destructive",
+        title: "Erro no login",
+        description: message,
+      });
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Sign In
-          </h1>
-          <p className="text-gray-600">
-            Enter your credentials to access your account
-          </p>
-        </div>
+    <>
+      <Head>
+        <title>Login • UniLink</title>
+        <meta name="robots" content="noindex,nofollow" />
+      </Head>
 
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.general && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600">{errors.general}</p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
+            <p className="text-gray-600">Entre com suas credenciais para acessar sua conta</p>
+          </div>
+
+          <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            {/* Mensagem de erro global (via toast) */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-900">
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={!!errors.email}
+                  {...register("email")}
+                  className={`${errors.email
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-primary focus:ring-primary"
+                    }`}
+                  placeholder="you@domain.com"
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-600" role="alert">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-900">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                className={`${
-                  errors.email 
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:border-primary focus:ring-primary'
-                }`}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-gray-900">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={!!errors.password}
+                  {...register("password")}
+                  className={`${errors.password
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-primary focus:ring-primary"
+                    }`}
+                  placeholder="••••••••"
+                />
+                {errors.password && (
+                  <p className="text-sm text-red-600" role="alert">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-900">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange('password')}
-                className={`${
-                  errors.password 
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:border-primary focus:ring-primary'
-                }`}
-                placeholder="Enter your password"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password}</p>
-              )}
-            </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
+              >
+                {isSubmitting ? "Signing In..." : "Sign In"}
+              </Button>
+            </form>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
-            >
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Demo credentials: user@example.com / password
-            </p>
+          <div className="text-center">
+            <Link href="/" className="text-primary hover:text-primary/80 text-sm">
+              ← Back to Home
+            </Link>
           </div>
         </div>
-
-        <div className="text-center">
-          <Link href="/" className="text-primary hover:text-primary/80 text-sm">
-            ← Back to Home
-          </Link>
-        </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }
+
+/**
+ * Testes manuais:
+ * - Válido: credenciais corretas -> token salvo em cookie, redireciona /feed
+ * - Inválido: 4xx -> toast de erro; não cria cookie
+ * - Expirado: qualquer rota 401 -> interceptor remove cookie e navega pra /login
+ */

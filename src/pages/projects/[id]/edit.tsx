@@ -391,8 +391,8 @@ export default function EditProjectPage() {
                                 />
                             )}
                         </div>
-
                         {/* Owner */}
+                        {/* 
                         <div className="space-y-2">
                             <Label htmlFor="ownerId" className="text-sm text-muted-foreground">Responsável (ownerId)</Label>
                             {isLoadingAny ? (
@@ -409,6 +409,7 @@ export default function EditProjectPage() {
                                 <p className="text-sm text-destructive">{errors.ownerId.message}</p>
                             )}
                         </div>
+                        */}
 
                         {/* Tamanho da equipe */}
                         <div className="space-y-2">
