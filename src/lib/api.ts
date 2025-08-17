@@ -20,9 +20,8 @@ const AUTH_COOKIE = "auth-token";
  */
 export function createApi(): AxiosInstance {
   const baseURL =
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:8080";
+  "https://unilink-backend-production.up.railway.app/"
+  {/*"http://localhost:8080";*/}
 
   const instance = axios.create({
     baseURL,
