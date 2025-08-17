@@ -314,7 +314,7 @@ export default function CadastrarProjetoPage() {
 
                         {/* Tags a remover – abaixo do multi-select anterior */}
                         <div className="space-y-2">
-                            <Label className="text-sm text-muted-foreground">Remover tags (opcional)</Label>
+                            <Label className="text-sm text-muted-foreground">Remover tags</Label>
                             {loadingTags ? (
                                 <Skeleton className="h-10 w-full" />
                             ) : (
@@ -380,7 +380,7 @@ export default function CadastrarProjetoPage() {
                                 className="min-w-44"
                                 disabled={isSubmitting || loadingCenters || loadingTags}
                             >
-                                {isSubmitting ? "Salvando..." : "Save changes"}
+                                {isSubmitting ? "Salvando..." : "Salvar Mudanças"}
                             </Button>
                         </div>
                     </section>
