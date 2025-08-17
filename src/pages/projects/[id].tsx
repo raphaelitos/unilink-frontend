@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Header } from "@/components/Header";
-import { centers, projects, tags } from "@/lib/mock";
+import { centers, projects } from "@/lib/mock";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";

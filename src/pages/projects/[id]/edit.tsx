@@ -262,7 +262,7 @@ export default function EditProjectPage() {
                                                     Carregar nova foto
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent>Prévia local (não faz upload)</TooltipContent>
+                                            <TooltipContent>Prévia local</TooltipContent>
                                         </Tooltip>
 
                                         <input
@@ -379,7 +379,7 @@ export default function EditProjectPage() {
 
                         {/* Tags a remover */}
                         <div className="space-y-2">
-                            <Label className="text-sm text-muted-foreground">Remover tags (opcional)</Label>
+                            <Label className="text-sm text-muted-foreground">Remover tags</Label>
                             {loadingTags ? (
                                 <Skeleton className="h-10 w-full" />
                             ) : (
