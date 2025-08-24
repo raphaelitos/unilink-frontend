@@ -5,18 +5,15 @@ export const ProjectsSkeleton: React.FC<{ count?: number }> = ({ count = 8 }) =>
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-2xl overflow-hidden border">
-          <Skeleton className="w-full aspect-[16/9]" />
+        <div key={i} className="rounded-2xl shadow-sm overflow-hidden">
+          <Skeleton className="w-full aspect-video" />
           <div className="p-4 space-y-3">
-            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-1/3" />
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-14 rounded-full" />
-                <Skeleton className="h-6 w-10 rounded-full" />
-              </div>
-              <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="flex gap-2 pt-2">
+              <Skeleton className="h-6 w-16 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
             </div>
           </div>
         </div>
@@ -25,37 +22,54 @@ export const ProjectsSkeleton: React.FC<{ count?: number }> = ({ count = 8 }) =>
   );
 };
 
-export const TagsSkeleton: React.FC = () => {
+export const TagsSkeleton: React.FC<{ count?: number }> = ({ count = 7 }) => {
   return (
-    <div className="flex gap-x-3 overflow-x-auto py-1" aria-hidden="true">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <Skeleton key={i} className="h-8 w-20 rounded-full" />
+    <div className="flex items-center gap-3 overflow-x-auto">
+      {Array.from({ length: count }).map((_, i) => (
+        <Skeleton key={i} className="h-8 w-20 rounded-full shrink-0" />
       ))}
     </div>
   );
 };
 
-export const DetailSkeleton: React.FC = () => {
+export const ProjectDetailSkeleton: React.FC = () => {
   return (
-    <div>
-      <Skeleton className="h-10 w-2/3 max-w-xl mx-auto" />
-      <Skeleton className="h-6 w-40 mx-auto mt-4" />
-      <div className="my-8">
-        <Skeleton className="h-0.5 w-full" />
+    <>
+      <Skeleton className="h-9 sm:h-10 w-3/4 max-w-xl mx-auto" />
+      <div className="flex justify-center mt-4">
+        <Skeleton className="h-7 w-44 rounded-full" />
       </div>
+
+      <div className="my-8">
+        <Skeleton className="h-px w-full" />
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
-        <Skeleton className="w-full rounded-3xl aspect-square md:aspect-[4/3]" />
+        {/* Coluna esquerda: imagem grande */}
+        <div className="w-full">
+          <Skeleton className="w-full aspect-square md:aspect-[4/3] rounded-3xl" />
+        </div>
+
+        {/* Coluna direita: dois cards */}
         <div className="space-y-6">
           <div>
             <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
+            <div className="rounded-2xl shadow-sm p-4 border">
+              <Skeleton className="h-4 w-11/12 mb-2" />
+              <Skeleton className="h-4 w-9/12" />
+            </div>
           </div>
           <div>
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-12 w-full rounded-2xl" />
+            <Skeleton className="h-4 w-28 mb-2" />
+            <div className="rounded-2xl shadow-sm p-4 border">
+              <Skeleton className="h-4 w-5/12" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
+
+// Alias para compatibilidade se algum lugar ainda importar DetailSkeleton
+export const DetailSkeleton = ProjectDetailSkeleton;
