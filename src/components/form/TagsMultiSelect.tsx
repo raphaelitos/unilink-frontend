@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
-import type { Tag, UUID } from "@/types/project";
+import type { ApiTag as Tag, UUID } from "@/types/project";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +94,6 @@ export const TagsMultiSelect: React.FC<Props> = ({ options, value, onChange, pla
         </PopoverContent>
       </Popover>
 
-      {/* Chips selecionadas */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2" role="listbox" aria-multiselectable>
           {selectedTags.map((t) => (

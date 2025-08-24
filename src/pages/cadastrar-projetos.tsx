@@ -10,7 +10,12 @@ import { Header } from "@/components/Header";
 import { TagsMultiSelect } from "@/components/form/TagsMultiSelect";
 
 import { getCenters, getTags, createProject } from "@/lib/api";
-import type { Center, Tag, CreateProjectRequest } from "@/types/project";
+import type {
+  ApiCenter as Center,
+  ApiTag as Tag,
+  CreateProjectRequest,
+} from "@/types/project";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
