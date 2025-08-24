@@ -3,7 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +35,7 @@ export default function ProjectDetailPage() {
       const data = await getProjectById(projectId);
       setProject(data);
     } catch (err: unknown) {
-      if (err instanceof AxiosError) {
+      if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
           setNotFound(true);
         } else {
@@ -59,7 +59,7 @@ export default function ProjectDetailPage() {
   React.useEffect(() => {
     if (!id) return;
     if (!uuidRegex.test(id)) {
-      // ID invalido gera 404 direto
+      // ID inválido gera 404 direto
       setLoading(false);
       setProject(null);
       setNotFound(true);
@@ -68,6 +68,10 @@ export default function ProjectDetailPage() {
     void fetchProject(id);
   }, [id, fetchProject]);
 
+  const metaDescription =
+    project?.description
+      ? project.description.slice(0, 160)
+      : "Projeto";
   const pageTitle = project ? `${project.name} • UniLink` : "Projeto • UniLink";
 
   // Estado 404
@@ -76,6 +80,7 @@ export default function ProjectDetailPage() {
       <>
         <Head>
           <title>{pageTitle}</title>
+          <meta name="robots" content="noindex" />
         </Head>
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -102,10 +107,7 @@ export default function ProjectDetailPage() {
     <>
       <Head>
         <title>{pageTitle}</title>
-        <meta
-          name="description"
-          content={project?.description ?? "Projeto"}
-        />
+        <meta name="description" content={metaDescription} />
       </Head>
 
       <Header />

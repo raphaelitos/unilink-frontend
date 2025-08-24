@@ -13,10 +13,10 @@ import { TagsMultiSelect } from "@/components/form/TagsMultiSelect";
 import { getCenters, getTags } from "@/lib/api";
 import { getProjectById, updateProject } from "@/lib/projects";
 import type {
-  Center,
-  Tag,
+  ApiCenter as Center,
+  ApiTag as Tag,
   ApiProjectDetailed,
-  ProjectEditRequest,
+  UpdateProjectRequest as ProjectEditRequest,
 } from "@/types/project";
 
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,6 @@ import Link from "next/link";
 const uuidRegex =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
-// ✅ Removido .default([]) para não tornar os campos opcionais aos olhos do resolver
 const Schema = z
   .object({
     name: z.string().min(3, "Nome deve ter ao menos 3 caracteres."),
@@ -58,8 +57,8 @@ const Schema = z
     openForApplications: z.boolean(),
     imgUrl: z.string().url("Forneça uma URL de imagem válida.").or(z.literal("")),
     teamSize: z.number().int().min(1, "Tamanho mínimo da equipe é 1."),
-    tagsToBeAdded: z.array(z.string().regex(uuidRegex, "UUID inválido")),  // <- obrigatório
-    tagsToBeRemoved: z.array(z.string().regex(uuidRegex, "UUID inválido")), // <- obrigatório
+    tagsToBeAdded: z.array(z.string().regex(uuidRegex, "UUID inválido")),  
+    tagsToBeRemoved: z.array(z.string().regex(uuidRegex, "UUID inválido")),
     imageBase64: z.string().optional(),
     imageContentType: z.string().optional(),
     validForCreation: z.literal(true),
@@ -85,7 +84,6 @@ const defaultValues: DefaultValues<FormValues> = {
   openForApplications: false,
   imgUrl: "",
   teamSize: 1,
-  // ✅ Arrays obrigatórios recebem [] aqui, não no schema
   tagsToBeAdded: [],
   tagsToBeRemoved: [],
   imageBase64: undefined,
@@ -337,7 +335,6 @@ export default function EditProjectPage() {
           </div>
         )}
 
-        {/* Mantém o mesmo markup/estética do formulário original */}
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 md:grid-cols-2 lg:gap-10">
           {/* Coluna esquerda — preview / imagem */}
           <section aria-labelledby="preview-title">
@@ -377,7 +374,7 @@ export default function EditProjectPage() {
                           Carregar nova foto
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Prévia local (gera Base64 para envio)</TooltipContent>
+                      <TooltipContent>Prévia</TooltipContent>
                     </Tooltip>
 
                     <input
@@ -514,26 +511,6 @@ export default function EditProjectPage() {
                   onChange={(vals) => setValue("tagsToBeRemoved", vals)}
                   placeholder="Selecione tags para remover…"
                 />
-              )}
-            </div>
-
-            {/* Owner */}
-            <div className="space-y-2">
-              <Label htmlFor="ownerId" className="text-sm text-muted-foreground">
-                Responsável (ownerId)
-              </Label>
-              {isLoadingAny ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <Input
-                  id="ownerId"
-                  placeholder="UUID do responsável"
-                  aria-invalid={!!errors.ownerId}
-                  {...register("ownerId")}
-                />
-              )}
-              {errors.ownerId && (
-                <p className="text-sm text-destructive">{errors.ownerId.message}</p>
               )}
             </div>
 
