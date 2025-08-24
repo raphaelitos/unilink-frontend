@@ -4,7 +4,12 @@ import axios, {
   type AxiosRequestHeaders,
 } from "axios";
 import Cookies from "js-cookie";
-import type { Center, Tag, CreateProjectRequest, ProjectResponse } from "@/types/project";
+import type {
+  ApiCenter as Center,
+  ApiTag as Tag,
+  CreateProjectRequest,
+  ApiProjectDetailed as ProjectResponse,
+} from "@/types/project";
 
 const AUTH_COOKIE = "auth-token";
 

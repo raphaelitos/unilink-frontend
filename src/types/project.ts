@@ -1,37 +1,25 @@
 export type UUID = string;
 
-export type Center = { id: UUID; name: string; centerUrl: string };
-export type Tag = { id: UUID; name: string; colorHex: string };
-
-export type ProjectResponse = {
+/** Schemas de leitura (responses) */
+export type ApiCenter = {
   id: UUID;
   name: string;
-  description: string;
-  centerId: UUID;
-  ownerId: UUID;
-  openForApplications: boolean;
-  imgUrl: string;
-  teamSize: number;
-  tagIds?: UUID[];
+  centerUrl: string;
 };
 
-export type CreateProjectRequest = {
+export type ApiTag = {
+  id: UUID;
   name: string;
-  description: string;
-  centerId: UUID;
-  ownerId: UUID;
-  openForApplications: boolean;
-  imgUrl: string;
-  teamSize: number;
-  tagsToBeAdded: UUID[];
-  tagsToBeRemoved: UUID[];
-  validForCreation: boolean;
+  colorHex: string;
 };
 
-export type ApiCenter = { id: UUID; name: string; centerUrl: string };
-export type ApiTag = { id: UUID; name: string; colorHex: string };
-export type ApiUser = { id: UUID; name: string; email: string };
+export type ApiUser = {
+  id: UUID;
+  name: string;
+  email: string;
+};
 
+/** Project detalhado */
 export type ApiProjectDetailed = {
   id: UUID;
   name: string;
@@ -44,7 +32,8 @@ export type ApiProjectDetailed = {
   tags: ApiTag[];
 };
 
-export type ProjectEditRequest = {
+/** ProjectRequestDTO (create/update) */
+export type ProjectRequestDTO = {
   name: string;
   description: string;
   centerId: UUID;
@@ -58,3 +47,18 @@ export type ProjectEditRequest = {
   imageContentType?: string;
   validForCreation: boolean;
 };
+
+export type CreateProjectRequest = ProjectRequestDTO;
+export type UpdateProjectRequest = ProjectRequestDTO;
+
+export type ProjectQueryFilter = {
+  name?: string;
+  teamSizeGTE?: number;
+  teamSizeLTE?: number;
+  centerId?: UUID;
+  openForApplications?: boolean;
+  tagIds?: UUID[];
+};
+
+/** Respostas utilitárias */
+export type GetProjectsResponse = ApiProjectDetailed[];
