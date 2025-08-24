@@ -28,12 +28,12 @@ export type CreateProjectRequest = {
   validForCreation: boolean;
 };
 
-export type ApiCenter = { id: string; name: string; centerUrl: string };
-export type ApiTag = { id: string; name: string; colorHex: string };
-export type ApiUser = { id: string; name: string; email: string };
+export type ApiCenter = { id: UUID; name: string; centerUrl: string };
+export type ApiTag = { id: UUID; name: string; colorHex: string };
+export type ApiUser = { id: UUID; name: string; email: string };
 
 export type ApiProjectDetailed = {
-  id: string;
+  id: UUID;
   name: string;
   description: string;
   openForApplications: boolean;
@@ -47,14 +47,14 @@ export type ApiProjectDetailed = {
 export type ProjectEditRequest = {
   name: string;
   description: string;
-  centerId: string;        // uuid
-  ownerId: string;         // uuid
+  centerId: UUID;
+  ownerId: UUID;
   openForApplications: boolean;
-  imgUrl: string;          // pode ser vazio quando imageBase64 for usado
+  imgUrl: string;
   teamSize: number;
-  tagsToBeAdded: string[];   // uuids
-  tagsToBeRemoved: string[]; // uuids
-  imageBase64?: string;      // opcional
-  imageContentType?: string; // opcional; obrigatório se imageBase64 existir
-  validForCreation: boolean; // manter true conforme backend
+  tagsToBeAdded: UUID[];
+  tagsToBeRemoved: UUID[];
+  imageBase64?: string;
+  imageContentType?: string;
+  validForCreation: boolean;
 };
