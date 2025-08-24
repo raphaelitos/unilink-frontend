@@ -32,6 +32,7 @@ export const TagsSkeleton: React.FC<{ count?: number }> = ({ count = 7 }) => {
   );
 };
 
+/** Skeleton para a página de DETALHE do projeto */
 export const ProjectDetailSkeleton: React.FC = () => {
   return (
     <>
@@ -45,12 +46,9 @@ export const ProjectDetailSkeleton: React.FC = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
-        {/* Coluna esquerda: imagem grande */}
         <div className="w-full">
           <Skeleton className="w-full aspect-square md:aspect-[4/3] rounded-3xl" />
         </div>
-
-        {/* Coluna direita: dois cards */}
         <div className="space-y-6">
           <div>
             <Skeleton className="h-4 w-24 mb-2" />
@@ -71,5 +69,45 @@ export const ProjectDetailSkeleton: React.FC = () => {
   );
 };
 
-// Alias para compatibilidade se algum lugar ainda importar DetailSkeleton
+// Alias de compatibilidade
 export const DetailSkeleton = ProjectDetailSkeleton;
+
+/** Skeleton para a página de EDIÇÃO do projeto */
+export const ProjectEditSkeleton: React.FC = () => {
+  return (
+    <>
+      <Skeleton className="h-9 sm:h-10 w-64 max-w-xs mx-auto" />
+      <div className="my-8">
+        <Skeleton className="h-px w-full" />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
+        {/* Coluna esquerda: preview quadrado */}
+        <div className="w-full">
+          <Skeleton className="w-full aspect-square rounded-3xl" />
+          <div className="mt-4 flex justify-center gap-3">
+            <Skeleton className="h-9 w-40 rounded-md" />
+          </div>
+          <div className="mt-4">
+            <Skeleton className="h-4 w-40 mb-2" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+
+        {/* Coluna direita: campos do formulário */}
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <div className="mt-6 flex justify-end">
+            <Skeleton className="h-10 w-40 rounded-md" />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};

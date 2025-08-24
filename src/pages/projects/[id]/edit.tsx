@@ -391,26 +391,6 @@ export default function EditProjectPage() {
                                 />
                             )}
                         </div>
-                        {/* Owner */}
-                        {/* 
-                        <div className="space-y-2">
-                            <Label htmlFor="ownerId" className="text-sm text-muted-foreground">Responsável (ownerId)</Label>
-                            {isLoadingAny ? (
-                                <Skeleton className="h-10 w-full" />
-                            ) : (
-                                <Input
-                                    id="ownerId"
-                                    placeholder="UUID do responsável"
-                                    aria-invalid={!!errors.ownerId}
-                                    {...register("ownerId")}
-                                />
-                            )}
-                            {errors.ownerId && (
-                                <p className="text-sm text-destructive">{errors.ownerId.message}</p>
-                            )}
-                        </div>
-                        */}
-
                         {/* Tamanho da equipe */}
                         <div className="space-y-2">
                             <Label htmlFor="teamSize" className="text-sm text-muted-foreground">Tamanho da equipe</Label>

@@ -44,40 +44,17 @@ export type ApiProjectDetailed = {
   tags: ApiTag[];
 };
 
-/* Fica ai para possivel implementacao de zod
-import { z } from "zod";
-
-export const apiProjectDetailedSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  openForApplications: z.boolean().optional(),
-  imgUrl: z.string().url().nullable().optional(),
-  teamSize: z.number().int().nonnegative().optional(),
-  owner: z
-    .object({
-      id: z.string().uuid(),
-      name: z.string(),
-      email: z.string().email(),
-    })
-    .nullable()
-    .optional(),
-  center: z
-    .object({
-      id: z.string().uuid(),
-      name: z.string(),
-      centerUrl: z.string().url().optional(),
-    })
-    .nullable()
-    .optional(),
-  tags: z
-    .array(
-      z.object({
-        id: z.string().uuid(),
-        name: z.string(),
-        colorHex: z.string(),
-      })
-    )
-    .optional(),
-});
-*/
+export type ProjectEditRequest = {
+  name: string;
+  description: string;
+  centerId: string;        // uuid
+  ownerId: string;         // uuid
+  openForApplications: boolean;
+  imgUrl: string;          // pode ser vazio quando imageBase64 for usado
+  teamSize: number;
+  tagsToBeAdded: string[];   // uuids
+  tagsToBeRemoved: string[]; // uuids
+  imageBase64?: string;      // opcional
+  imageContentType?: string; // opcional; obrigatório se imageBase64 existir
+  validForCreation: boolean; // manter true conforme backend
+};
