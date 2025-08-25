@@ -34,10 +34,10 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/errors";
 import {
-  fileToDataURL,
-  extractBase64AndMime,
   isAcceptedImage,
+  buildImagePayload,
 } from "@/lib/images";
+import { dedupeUUIDs, ensureArrays } from "@/lib/tags";
 
 // Schema Zod — permite imgUrl vazio se for enviar imageBase64+imageContentType
 const Schema = z
@@ -49,6 +49,7 @@ const Schema = z
     openForApplications: z.boolean(),
     imgUrl: z.string().url("Forneça uma URL de imagem válida.").or(z.literal("")),
     teamSize: z.number().int().min(1, "Tamanho mínimo da equipe é 1."),
+    // Mantemos arrays obrigatórios no schema e com defaultValues = []
     tagsToBeAdded: z.array(z.string().uuid()),
     tagsToBeRemoved: z.array(z.string().uuid()),
     imageBase64: z.string().optional(),
@@ -78,7 +79,7 @@ const defaultValues: DefaultValues<FormValues> = {
   imgUrl: "",
   teamSize: 1,
   tagsToBeAdded: [],
-  tagsToBeRemoved: [],
+  tagsToBeRemoved: [], // criação não remove nada, mas mantemos presente para evitar undefined
   imageBase64: undefined,
   imageContentType: undefined,
   validForCreation: true,
@@ -93,7 +94,7 @@ export default function CadastrarProjetoPage() {
   const [loadingCenters, setLoadingCenters] = React.useState(true);
   const [loadingTags, setLoadingTags] = React.useState(true);
 
-  // Prévia local (DataURL) — renderizamos APENAS como preview; render final usa imgUrl do backend
+  // Prévia local (DataURL) — render final usa SEMPRE imgUrl do backend
   const [localPreviewUrl, setLocalPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -152,7 +153,7 @@ export default function CadastrarProjetoPage() {
     void Promise.all([fetchCenters(), fetchTags()]);
   }, [fetchCenters, fetchTags]);
 
-  // Escolha de arquivo → valida, converte p/ DataURL, extrai base64+mime e seta no form
+  // Escolha de arquivo → valida, converte p/ DataURL e seta no form
   const onFileChosen: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -160,31 +161,19 @@ export default function CadastrarProjetoPage() {
     if (!isAcceptedImage(file)) {
       toast({
         variant: "destructive",
-        title: "Arquivo inválido",
-        description: "Envie uma imagem (JPG/PNG/etc.) até 5MB.",
+        title: "Imagem inválida",
+        description: "Envie uma imagem (até 5MB).",
       });
       return;
     }
 
-    try {
-      const dataURL = await fileToDataURL(file);
-      const { base64, mime } = extractBase64AndMime(dataURL);
-      setLocalPreviewUrl(dataURL);
-      // Como vamos enviar Base64, imgUrl pode ficar vazio
-      setValue("imgUrl", "", { shouldValidate: true });
-      setValue("imageBase64", base64, { shouldValidate: true });
-      setValue("imageContentType", mime, { shouldValidate: true });
-      toast({ title: "Pré-visualização aplicada", description: "A imagem será enviada em Base64 no salvamento." });
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Falha ao processar imagem",
-        description: getErrorMessage(err),
-      });
-    } finally {
-      // reseta input file para permitir re-seleção do mesmo arquivo
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    const { imageBase64, imageContentType, dataURL } = await buildImagePayload(file);
+    setLocalPreviewUrl(dataURL);
+    setValue("imageBase64", imageBase64, { shouldValidate: true });
+    setValue("imageContentType", imageContentType, { shouldValidate: true });
+    setValue("imgUrl", "", { shouldValidate: false });
+
+    toast({ title: "Pré-visualização aplicada", description: "A imagem será enviada ao salvar." });
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -194,11 +183,12 @@ export default function CadastrarProjetoPage() {
       centerId: values.centerId,
       ownerId: values.ownerId,
       openForApplications: values.openForApplications,
-      // Se o usuário selecionou arquivo, imgUrl pode estar vazio; backend retornará imgUrl final
+      // Se foi selecionado arquivo, imgUrl pode ficar ""
       imgUrl: values.imgUrl,
       teamSize: values.teamSize,
-      tagsToBeAdded: values.tagsToBeAdded,
-      tagsToBeRemoved: values.tagsToBeRemoved,
+      // 🔒 Sempre envie arrays presentes (mesmo vazios)
+      tagsToBeAdded: dedupeUUIDs(ensureArrays(values.tagsToBeAdded)),
+      tagsToBeRemoved: [], // criação não remove nada
       imageBase64: values.imageBase64 || undefined,
       imageContentType: values.imageContentType || undefined,
       validForCreation: true,
@@ -207,9 +197,7 @@ export default function CadastrarProjetoPage() {
     try {
       const created = await createProject(payload);
       toast({ title: "Projeto criado com sucesso!" });
-      // Após salvar, descartamos DataURL local (próximas telas já renderizam por imgUrl do backend)
-      setLocalPreviewUrl(null);
-      // Redireciona usando o id retornado
+      setLocalPreviewUrl(null); // descarta DataURL local
       router.push(`/projects/${created.id}`);
     } catch (error: unknown) {
       toast({
@@ -259,7 +247,7 @@ export default function CadastrarProjetoPage() {
                   )}
                 </div>
 
-                {/* Botão para escolher arquivo (mantém estética próxima ao padrão da app) */}
+                {/* Botão para escolher arquivo */}
                 <div className="mt-4 flex justify-center">
                   <Button
                     type="button"
@@ -398,6 +386,7 @@ export default function CadastrarProjetoPage() {
             </div>
 
             {/* Tags a remover */}
+            {/*
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">Remover tags</Label>
               {loadingTags ? (
@@ -411,7 +400,7 @@ export default function CadastrarProjetoPage() {
                 />
               )}
             </div>
-
+            */}
             {/* Owner */}
             <div className="space-y-2">
               <Label htmlFor="ownerId" className="text-sm text-muted-foreground">
@@ -479,6 +468,7 @@ export default function CadastrarProjetoPage() {
 
 /**
  * Testes manuais:
- * - Salvar sem imagem (apenas URL vazia) → backend cria projeto e retorna imgUrl; detalhe renderiza por imgUrl.
- * - Selecionar arquivo → vê prévia; ao salvar, envia Base64+contentType e imgUrl vazio; backend retorna imgUrl.
+ * - Sem tags → POST envia tagsToBeAdded: [], tagsToBeRemoved: []
+ * - Com tags novas → arrays presentes (sem null/undefined)
+ * - Com imagem via arquivo → envia Data URL em imageBase64 + imageContentType
  */

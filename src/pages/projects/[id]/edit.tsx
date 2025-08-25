@@ -44,11 +44,8 @@ import {
 import { ProjectEditSkeleton } from "@/components/Skeletons";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import {
-  fileToDataURL,
-  extractBase64AndMime,
-  isAcceptedImage,
-} from "@/lib/images";
+import { isAcceptedImage, buildImagePayload } from "@/lib/images";
+import { diffTagIds, dedupeUUIDs, ensureArrays } from "@/lib/tags";
 
 const uuidRegex =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
@@ -62,7 +59,9 @@ const Schema = z
     openForApplications: z.boolean(),
     imgUrl: z.string().url("Forneça uma URL de imagem válida.").or(z.literal("")),
     teamSize: z.number().int().min(1, "Tamanho mínimo da equipe é 1."),
+    // Este campo representa as TAGS SELECIONADAS atualmente (não o delta)
     tagsToBeAdded: z.array(z.string().regex(uuidRegex, "UUID inválido")),
+    // Mantemos no form para compat visual, mas será ignorado no submit
     tagsToBeRemoved: z.array(z.string().regex(uuidRegex, "UUID inválido")),
     imageBase64: z.string().optional(),
     imageContentType: z.string().optional(),
@@ -111,6 +110,9 @@ export default function EditProjectPage() {
   const [notFound, setNotFound] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+  // Guarda as tags originais para calcular delta no submit
+  const originalTagIdsRef = React.useRef<string[]>([]);
+
   // Preview local (DataURL). Render final SEMPRE por imgUrl.
   const [localPreviewUrl, setLocalPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -138,8 +140,8 @@ export default function EditProjectPage() {
     try {
       setLoadingCenters(true);
       setCenters(await getCenters());
-    } catch (error) {
-      setErrorMessage((error as Error).message ?? "Erro ao carregar centros");
+    } catch {
+      setErrorMessage("Erro ao carregar centros");
     } finally {
       setLoadingCenters(false);
     }
@@ -149,8 +151,8 @@ export default function EditProjectPage() {
     try {
       setLoadingTags(true);
       setTags(await getTags());
-    } catch (error) {
-      setErrorMessage((error as Error).message ?? "Erro ao carregar tags");
+    } catch {
+      setErrorMessage("Erro ao carregar tags");
     } finally {
       setLoadingTags(false);
     }
@@ -159,6 +161,9 @@ export default function EditProjectPage() {
   // Hidrata o form com o projeto
   const hydrateFormFromProject = React.useCallback(
     (p: ApiProjectDetailed) => {
+      const original = (p.tags ?? []).map((t) => t.id);
+      originalTagIdsRef.current = original;
+
       reset({
         name: p.name,
         description: p.description,
@@ -167,7 +172,9 @@ export default function EditProjectPage() {
         openForApplications: p.openForApplications,
         imgUrl: p.imgUrl ?? "",
         teamSize: p.teamSize,
-        tagsToBeAdded: (p.tags ?? []).map((t) => t.id),
+        // No form, guardamos as TAGS SELECIONADAS atuais
+        tagsToBeAdded: original,
+        // Campo visual/compat: manter vazio
         tagsToBeRemoved: [],
         imageBase64: undefined,
         imageContentType: undefined,
@@ -222,38 +229,30 @@ export default function EditProjectPage() {
     if (!file) return;
 
     if (!isAcceptedImage(file)) {
-      // 5MB por padrão
       toast({
         variant: "destructive",
-        title: "Arquivo inválido",
-        description: "Envie uma imagem até 5MB.",
+        title: "Imagem inválida",
+        description: "Envie uma imagem (até 5MB).",
       });
       return;
     }
 
-    try {
-      const dataURL = await fileToDataURL(file);
-      const { base64, mime } = extractBase64AndMime(dataURL);
-      setLocalPreviewUrl(dataURL);
-      // Se houver nova imagem selecionada, imgUrl pode ser esvaziado (deixa o backend decidir a URL final)
-      setValue("imgUrl", "", { shouldValidate: true });
-      setValue("imageBase64", base64, { shouldValidate: true });
-      setValue("imageContentType", mime, { shouldValidate: true });
-      toast({ title: "Pré-visualização aplicada", description: "A imagem será enviada em Base64 ao salvar." });
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Falha ao processar imagem",
-        description: (err as Error)?.message ?? "Erro inesperado",
-      });
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    const { imageBase64, imageContentType, dataURL } = await buildImagePayload(file);
+    setLocalPreviewUrl(dataURL);
+    setValue("imageBase64", imageBase64, { shouldValidate: true });
+    setValue("imageContentType", imageContentType, { shouldValidate: true });
+    setValue("imgUrl", "", { shouldValidate: false });
+    toast({ title: "Pré-visualização aplicada", description: "A imagem será enviada ao salvar." });
   };
 
   // Submit
   const onSubmit = async (values: FormValues) => {
     if (!id) return;
+
+    // 🔁 Calcula delta: selected (form) vs original (carregado)
+    const selected = dedupeUUIDs(ensureArrays(values.tagsToBeAdded));
+    const original = dedupeUUIDs(ensureArrays(originalTagIdsRef.current));
+    const { toAdd, toRemove } = diffTagIds(original, selected);
 
     const payload: ProjectEditRequest = {
       name: values.name,
@@ -263,8 +262,9 @@ export default function EditProjectPage() {
       openForApplications: values.openForApplications,
       imgUrl: values.imgUrl,
       teamSize: values.teamSize,
-      tagsToBeAdded: values.tagsToBeAdded,
-      tagsToBeRemoved: values.tagsToBeRemoved,
+      // ✅ Envia apenas o delta; arrays sempre presentes
+      tagsToBeAdded: toAdd,
+      tagsToBeRemoved: toRemove,
       imageBase64: values.imageBase64 || undefined,
       imageContentType: values.imageContentType || undefined,
       validForCreation: true,
@@ -273,7 +273,6 @@ export default function EditProjectPage() {
     try {
       await updateProject(id, payload);
       toast({ title: "Projeto atualizado com sucesso!" });
-      // limpar dataURL local; próxima renderização do detalhe virá com imgUrl do backend
       setLocalPreviewUrl(null);
       router.push(`/projects/${id}`);
     } catch (error) {
@@ -490,7 +489,7 @@ export default function EditProjectPage() {
               )}
             </div>
 
-            {/* Tags a adicionar */}
+            {/* Tags a (re)selecionar (representa estado atual) */}
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">Tags do projeto</Label>
               {loadingTags ? (
@@ -505,7 +504,7 @@ export default function EditProjectPage() {
               )}
             </div>
 
-            {/* Tags a remover */}
+            {/* Tags a remover (apenas visual; será ignorado no submit) */}
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">Remover tags</Label>
               {loadingTags ? (
@@ -595,6 +594,7 @@ export default function EditProjectPage() {
 
 /**
  * Testes manuais:
- * - Selecionar arquivo → prévia aparece; salvar envia Base64+contentType; detalhe usa novo imgUrl.
- * - Sem arquivo (apenas manter imgUrl existente) → salvar OK.
+ * - Sem alterações de tags → envia toAdd: [], toRemove: []
+ * - Adicionar/remover tags → envia apenas o delta
+ * - Trocar imagem por arquivo → prévia local, PUT envia Data URL + mimetype
  */
