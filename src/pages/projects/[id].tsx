@@ -59,7 +59,6 @@ export default function ProjectDetailPage() {
   React.useEffect(() => {
     if (!id) return;
     if (!uuidRegex.test(id)) {
-      // ID inválido gera 404 direto
       setLoading(false);
       setProject(null);
       setNotFound(true);
@@ -69,12 +68,9 @@ export default function ProjectDetailPage() {
   }, [id, fetchProject]);
 
   const metaDescription =
-    project?.description
-      ? project.description.slice(0, 160)
-      : "Projeto";
+    project?.description ? project.description.slice(0, 160) : "Projeto";
   const pageTitle = project ? `${project.name} • UniLink` : "Projeto • UniLink";
 
-  // Estado 404
   if (!loading && notFound) {
     return (
       <>
@@ -120,7 +116,6 @@ export default function ProjectDetailPage() {
           <ProjectDetailSkeleton />
         ) : (
           <>
-            {/* Título central */}
             <h1
               id="project-title"
               className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-center"
@@ -128,7 +123,6 @@ export default function ProjectDetailPage() {
               {project.name}
             </h1>
 
-            {/* Badge "Inscrições abertas!" */}
             {project.openForApplications && (
               <div className="flex justify-center mt-4">
                 <Badge
@@ -170,7 +164,6 @@ export default function ProjectDetailPage() {
               </div>
             )}
 
-            {/* Erro genérico */}
             {error && (
               <div className="mt-4 flex flex-col items-center gap-3">
                 <p className="text-sm text-destructive text-center">{error}</p>
@@ -186,9 +179,7 @@ export default function ProjectDetailPage() {
 
             <Separator className="my-8" />
 
-            {/* Grid 2 colunas em md+ */}
             <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
-              {/* Imagem grande (esquerda) */}
               <div className="w-full">
                 <div className="relative w-full rounded-3xl shadow-sm overflow-hidden aspect-square md:aspect-[4/3]">
                   {project.imgUrl ? (
@@ -208,7 +199,6 @@ export default function ProjectDetailPage() {
                 </div>
               </div>
 
-              {/* Cards à direita */}
               <div className="space-y-6">
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Descrição</div>
@@ -232,7 +222,6 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
-            {/* Navegação de volta */}
             <div className="mt-10 flex justify-center">
               <Link
                 href="/"

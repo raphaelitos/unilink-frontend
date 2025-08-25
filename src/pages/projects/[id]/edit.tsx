@@ -1,6 +1,7 @@
 import * as React from "react";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +44,11 @@ import {
 import { ProjectEditSkeleton } from "@/components/Skeletons";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import Link from "next/link";
+import {
+  fileToDataURL,
+  extractBase64AndMime,
+  isAcceptedImage,
+} from "@/lib/images";
 
 const uuidRegex =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
@@ -57,7 +62,7 @@ const Schema = z
     openForApplications: z.boolean(),
     imgUrl: z.string().url("Forneça uma URL de imagem válida.").or(z.literal("")),
     teamSize: z.number().int().min(1, "Tamanho mínimo da equipe é 1."),
-    tagsToBeAdded: z.array(z.string().regex(uuidRegex, "UUID inválido")),  
+    tagsToBeAdded: z.array(z.string().regex(uuidRegex, "UUID inválido")),
     tagsToBeRemoved: z.array(z.string().regex(uuidRegex, "UUID inválido")),
     imageBase64: z.string().optional(),
     imageContentType: z.string().optional(),
@@ -92,7 +97,7 @@ const defaultValues: DefaultValues<FormValues> = {
 };
 
 export default function EditProjectPage() {
-  useAuthGuard(true);
+  useAuthGuard(true); // Protege a rota
 
   const router = useRouter();
   const { id } = router.query as { id?: string };
@@ -106,6 +111,7 @@ export default function EditProjectPage() {
   const [notFound, setNotFound] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+  // Preview local (DataURL). Render final SEMPRE por imgUrl.
   const [localPreviewUrl, setLocalPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -133,34 +139,24 @@ export default function EditProjectPage() {
       setLoadingCenters(true);
       setCenters(await getCenters());
     } catch (error) {
-      const message =
-        (error as AxiosError)?.response?.data &&
-        ((error as AxiosError).response?.data as { message?: string; error?: string }).message
-          ? ((error as AxiosError).response!.data as { message?: string }).message!
-          : (error as Error)?.message ?? "Erro ao carregar centros";
-      toast({ variant: "destructive", title: "Erro ao carregar centros", description: message });
+      setErrorMessage((error as Error).message ?? "Erro ao carregar centros");
     } finally {
       setLoadingCenters(false);
     }
-  }, [toast]);
+  }, []);
 
   const fetchTags = React.useCallback(async () => {
     try {
       setLoadingTags(true);
       setTags(await getTags());
     } catch (error) {
-      const message =
-        (error as AxiosError)?.response?.data &&
-        ((error as AxiosError).response?.data as { message?: string; error?: string }).message
-          ? ((error as AxiosError).response!.data as { message?: string }).message!
-          : (error as Error)?.message ?? "Erro ao carregar tags";
-      toast({ variant: "destructive", title: "Erro ao carregar tags", description: message });
+      setErrorMessage((error as Error).message ?? "Erro ao carregar tags");
     } finally {
       setLoadingTags(false);
     }
-  }, [toast]);
+  }, []);
 
-  // Hidrata o form a partir do projeto detalhado
+  // Hidrata o form com o projeto
   const hydrateFormFromProject = React.useCallback(
     (p: ApiProjectDetailed) => {
       reset({
@@ -195,12 +191,12 @@ export default function EditProjectPage() {
         if (error instanceof AxiosError && error.response?.status === 404) {
           setNotFound(true);
         } else {
-          const message =
+          const msg =
             (error as AxiosError)?.response?.data &&
             ((error as AxiosError).response?.data as { message?: string; error?: string }).message
               ? ((error as AxiosError).response!.data as { message?: string }).message!
               : (error as Error)?.message ?? "Erro ao carregar projeto";
-          setErrorMessage(message);
+          setErrorMessage(msg);
         }
       } finally {
         setLoadingProject(false);
@@ -209,7 +205,7 @@ export default function EditProjectPage() {
     [hydrateFormFromProject]
   );
 
-  // Efeito inicial: valida UUID e busca dados em paralelo
+  // Efeito inicial: valida UUID e busca em paralelo
   React.useEffect(() => {
     if (!id) return;
     if (!uuidRegex.test(id)) {
@@ -220,29 +216,39 @@ export default function EditProjectPage() {
     void Promise.all([fetchProject(id), fetchCenters(), fetchTags()]);
   }, [id, fetchProject, fetchCenters, fetchTags]);
 
-  // Abrir seletor de arquivo (apenas pré-visualização local + Base64 para envio)
-  const onChooseFileClick = () => fileInputRef.current?.click();
-
+  // Escolha de arquivo: valida, converte e injeta base64+mimetype no form (preview só local)
   const onFileChosen: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Gera dataURL (Base64) para preview e payload
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string; // "data:<mime>;base64,<...>"
-      setLocalPreviewUrl(dataUrl);
-      const [, base64] = dataUrl.split(",");
-      setValue("imageBase64", base64, { shouldValidate: true });
-      setValue("imageContentType", file.type || "application/octet-stream", { shouldValidate: true });
-
-      // dica ao usuário
+    if (!isAcceptedImage(file)) {
+      // 5MB por padrão
       toast({
-        title: "Pré-visualização aplicada",
-        description: "Essa imagem será enviada em Base64 ao salvar.",
+        variant: "destructive",
+        title: "Arquivo inválido",
+        description: "Envie uma imagem até 5MB.",
       });
-    };
-    reader.readAsDataURL(file);
+      return;
+    }
+
+    try {
+      const dataURL = await fileToDataURL(file);
+      const { base64, mime } = extractBase64AndMime(dataURL);
+      setLocalPreviewUrl(dataURL);
+      // Se houver nova imagem selecionada, imgUrl pode ser esvaziado (deixa o backend decidir a URL final)
+      setValue("imgUrl", "", { shouldValidate: true });
+      setValue("imageBase64", base64, { shouldValidate: true });
+      setValue("imageContentType", mime, { shouldValidate: true });
+      toast({ title: "Pré-visualização aplicada", description: "A imagem será enviada em Base64 ao salvar." });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Falha ao processar imagem",
+        description: (err as Error)?.message ?? "Erro inesperado",
+      });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   // Submit
@@ -255,7 +261,7 @@ export default function EditProjectPage() {
       centerId: values.centerId,
       ownerId: values.ownerId,
       openForApplications: values.openForApplications,
-      imgUrl: values.imgUrl, // pode estar vazio se imageBase64 estiver presente
+      imgUrl: values.imgUrl,
       teamSize: values.teamSize,
       tagsToBeAdded: values.tagsToBeAdded,
       tagsToBeRemoved: values.tagsToBeRemoved,
@@ -267,6 +273,8 @@ export default function EditProjectPage() {
     try {
       await updateProject(id, payload);
       toast({ title: "Projeto atualizado com sucesso!" });
+      // limpar dataURL local; próxima renderização do detalhe virá com imgUrl do backend
+      setLocalPreviewUrl(null);
       router.push(`/projects/${id}`);
     } catch (error) {
       const message =
@@ -374,7 +382,7 @@ export default function EditProjectPage() {
                           Carregar nova foto
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Prévia</TooltipContent>
+                      <TooltipContent>Prévia local (gera Base64)</TooltipContent>
                     </Tooltip>
 
                     <input
@@ -402,11 +410,9 @@ export default function EditProjectPage() {
                   )}
                 </div>
 
-                {/* Campos "ocultos" no layout (controlados via file chooser) */}
+                {/* Campos ocultos controlados pelo file chooser */}
                 <input type="hidden" {...register("imageBase64")} />
                 <input type="hidden" {...register("imageContentType")} />
-
-                {/* TODO: integrar upload real e preencher imgUrl com a URL retornada */}
               </CardContent>
             </Card>
           </section>
@@ -514,6 +520,26 @@ export default function EditProjectPage() {
               )}
             </div>
 
+            {/* Owner */}
+            <div className="space-y-2">
+              <Label htmlFor="ownerId" className="text-sm text-muted-foreground">
+                Responsável (ownerId)
+              </Label>
+              {isLoadingAny ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  id="ownerId"
+                  placeholder="UUID do responsável"
+                  aria-invalid={!!errors.ownerId}
+                  {...register("ownerId")}
+                />
+              )}
+              {errors.ownerId && (
+                <p className="text-sm text-destructive">{errors.ownerId.message}</p>
+              )}
+            </div>
+
             {/* Tamanho da equipe */}
             <div className="space-y-2">
               <Label htmlFor="teamSize" className="text-sm text-muted-foreground">
@@ -566,3 +592,9 @@ export default function EditProjectPage() {
     </>
   );
 }
+
+/**
+ * Testes manuais:
+ * - Selecionar arquivo → prévia aparece; salvar envia Base64+contentType; detalhe usa novo imgUrl.
+ * - Sem arquivo (apenas manter imgUrl existente) → salvar OK.
+ */
