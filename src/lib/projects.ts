@@ -4,7 +4,6 @@ import type {
   CreateProjectRequest,
   UpdateProjectRequest,
   ProjectQueryFilter,
-  GetProjectsResponse,
   UUID,
 } from '@/types/project';
 
@@ -17,22 +16,6 @@ export async function getProjectById(id: UUID): Promise<ApiProjectDetailed> {
   const { data } = await api.get<ApiProjectDetailed>(`/api/projects/${id}`);
   return data;
 }
-
-/**
- * GET /api/projects  (com body ProjectQueryFilter — conforme OpenAPI)
- * Observação: alguns proxies/clients não suportam body em GET.
- * O backend declarou esse contrato; usamos axios.request para enviar "data" no GET.
- * Se sua infra recusar GET com body, considere evoluir para POST /api/projects/search (futuro).
- */
-/*export async function getProjects(filter?: ProjectQueryFilter): Promise<GetProjectsResponse> {
-  const { data } = await api.request<GetProjectsResponse>({
-    method: 'GET',
-    url: '/api/projects',
-    // axios permite 'data' em GET; o servidor precisa aceitar
-    ...(filter ? { data: filter } : {}),
-  });
-  return data;
-}*/
 
 /**
  * POST /api/projects
