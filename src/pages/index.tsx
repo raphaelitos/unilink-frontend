@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import type { UUID, ApiTag, ApiProjectDetailed, ProjectQueryFilter } from "@/types/project";
 import { getTags } from "@/lib/api";
 import { getProjects } from "@/lib/projects";
+import { dedupeUUIDs } from "@/lib/tags";
 
 export default function HomePage() {
   const [selectedTagIds, setSelectedTagIds] = React.useState<UUID[]>([]);
@@ -68,16 +69,18 @@ export default function HomePage() {
 
   // Carrega projetos sempre que filtros mudarem
   React.useEffect(() => {
-    const filter: ProjectQueryFilter | undefined =
-      selectedTagIds.length > 0 || openOnly
-        ? {
-            tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
-            openForApplications: openOnly ? true : undefined,
-          }
-        : undefined;
+  const safeTagIds = dedupeUUIDs(selectedTagIds);
 
-    void loadProjects(filter);
-  }, [selectedTagIds, openOnly, loadProjects]);
+  const filter: ProjectQueryFilter | undefined =
+    safeTagIds.length > 0 || openOnly
+      ? {
+          tagIds: safeTagIds.length > 0 ? safeTagIds : undefined,
+          openForApplications: openOnly ? true : undefined,
+        }
+      : undefined;
+
+  void loadProjects(filter);
+}, [selectedTagIds, openOnly, loadProjects]);
 
   const onToggleTag = React.useCallback((id: UUID) => {
     setSelectedTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));

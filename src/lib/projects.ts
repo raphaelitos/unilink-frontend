@@ -24,7 +24,7 @@ export async function getProjectById(id: UUID): Promise<ApiProjectDetailed> {
  * O backend declarou esse contrato; usamos axios.request para enviar "data" no GET.
  * Se sua infra recusar GET com body, considere evoluir para POST /api/projects/search (futuro).
  */
-export async function getProjects(filter?: ProjectQueryFilter): Promise<GetProjectsResponse> {
+/*export async function getProjects(filter?: ProjectQueryFilter): Promise<GetProjectsResponse> {
   const { data } = await api.request<GetProjectsResponse>({
     method: 'GET',
     url: '/api/projects',
@@ -32,7 +32,7 @@ export async function getProjects(filter?: ProjectQueryFilter): Promise<GetProje
     ...(filter ? { data: filter } : {}),
   });
   return data;
-}
+}*/
 
 /**
  * POST /api/projects
@@ -68,4 +68,33 @@ export async function updateProject(id: UUID, payload: UpdateProjectRequest): Pr
  */
 export async function deleteProject(id: UUID): Promise<void> {
   await api.delete(`/api/projects/${id}`);
+}
+
+/**
+ * Busca projetos.
+ * - Sem filtro: bate direto no backend (GET /api/projects).
+ * - Com filtro: usa a rota local (/api/projects/search) que faz proxy (POST -> GET+body).
+ */
+export async function getProjects(filter?: ProjectQueryFilter): Promise<ApiProjectDetailed[]> {
+  // Sem filtro → GET simples direto no backend
+  if (!filter || Object.keys(filter).length === 0) {
+    const { data } = await api.get<ApiProjectDetailed[]>("/api/projects");
+    return Array.isArray(data) ? data : [];
+  }
+
+  // Com filtro → chama a rota Next API que proxia para o backend com GET+body
+  const res = await fetch("/api/projects/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // envia cookies para a rota local
+    body: JSON.stringify(filter),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => "");
+    throw new Error(err || `Falha ao filtrar projetos (${res.status})`);
+  }
+
+  const data = (await res.json()) as ApiProjectDetailed[];
+  return Array.isArray(data) ? data : [];
 }
