@@ -1,17 +1,20 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Center, Project, Tag } from "@/types";
+import type { ApiProjectDetailed } from "@/types/project";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
-  project: Project;
-  center?: Center;
-  tags: Tag[]; // apenas as do projeto (máx 3 visíveis)
+  project: ApiProjectDetailed;
 };
 
-export const ProjectCard: React.FC<Props> = ({ project, center, tags }) => {
+function safeHex(hex?: string): string {
+  return hex && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex) ? hex : "#6b7280";
+}
+
+export const ProjectCard: React.FC<Props> = ({ project }) => {
+  const tags = project.tags ?? [];
   const visibleTags = tags.slice(0, 3);
   const extra = tags.length - visibleTags.length;
 
@@ -23,15 +26,17 @@ export const ProjectCard: React.FC<Props> = ({ project, center, tags }) => {
     >
       <Card className="rounded-2xl overflow-hidden shadow-sm group-hover:shadow transition-shadow">
         <CardHeader className="p-0">
-          <div className="relative w-full aspect-[16/9]">
-            <Image
-              src={project.imgUrl}
-              alt={`Imagem do projeto ${project.name}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              priority={false}
-            />
+          <div className="relative w-full aspect-[16/9] bg-muted">
+            {project.imgUrl ? (
+              <Image
+                src={project.imgUrl}
+                alt={`Imagem do projeto ${project.name}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                priority={false}
+              />
+            ) : null}
           </div>
         </CardHeader>
         <CardContent className="p-4 space-y-3">
@@ -50,24 +55,28 @@ export const ProjectCard: React.FC<Props> = ({ project, center, tags }) => {
 
           <div className="text-sm">
             <span className="text-muted-foreground">Centro:</span>{" "}
-            <span>{center?.name ?? "—"}</span>
+            <span>{project.center?.name ?? "—"}</span>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <div className="flex flex-wrap gap-2">
-              {visibleTags.map((t) => (
-                <Badge
-                  key={t.id}
-                  variant="outline"
-                  style={{
-                    backgroundColor: `${t.colorHex}20`,
-                    borderColor: `${t.colorHex}55`,
-                  }}
-                  aria-label={`Tag ${t.name}`}
-                >
-                  {t.name}
-                </Badge>
-              ))}
+              {visibleTags.map((t) => {
+                const bg = safeHex(t.colorHex);
+                return (
+                  <Badge
+                    key={t.id}
+                    className="border rounded-full"
+                    style={{
+                      backgroundColor: bg,
+                      color: "#fff",
+                      borderColor: "transparent",
+                    }}
+                    aria-label={`Tag ${t.name}`}
+                  >
+                    {t.name}
+                  </Badge>
+                );
+              })}
               {extra > 0 && (
                 <Badge variant="secondary" aria-label={`Mais ${extra} tags`}>
                   +{extra}

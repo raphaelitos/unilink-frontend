@@ -1,11 +1,11 @@
 import * as React from "react";
-import type { Tag, UUID } from "@/types";
+import type { ApiTag, UUID } from "@/types/project";
 import { TagChip } from "@/components/TagChip";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 type Props = {
-  tags: Tag[];
+  tags: ApiTag[];
   selectedTagIds: UUID[];
   onToggleTag: (id: UUID) => void;
   openOnly?: boolean;
@@ -24,7 +24,6 @@ export const TagFilters: React.FC<Props> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold">Filtros</h3>
 
-        {/* Switch opcional — apenas UI */}
         <div className="flex items-center gap-2">
           <Switch
             id="open-only"
@@ -52,6 +51,8 @@ export const TagFilters: React.FC<Props> = ({
               active={active}
               onToggle={() => onToggleTag(t.id)}
               colorHex={t.colorHex}
+              /* <- cor quando selecionada na Home */
+              activeBgHex="#4D47C3"
             />
           );
         })}

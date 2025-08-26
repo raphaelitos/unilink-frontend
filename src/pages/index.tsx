@@ -1,45 +1,99 @@
 import * as React from "react";
 import Head from "next/head";
+import { AxiosError } from "axios";
+
 import { Header } from "@/components/Header";
 import { TagFilters } from "@/components/TagFilters";
 import { ProjectsGrid } from "@/components/ProjectsGrid";
 import { EmptyState } from "@/components/EmptyState";
 import { ProjectsSkeleton, TagsSkeleton } from "@/components/Skeletons";
-import type { UUID } from "@/types";
 import { Separator } from "@/components/ui/separator";
-import { centers, tags, projects } from "@/lib/mock";
+
+import type { UUID, ApiTag, ApiProjectDetailed, ProjectQueryFilter } from "@/types/project";
+import { getTags } from "@/lib/api";
+import { getProjects } from "@/lib/projects";
+import { dedupeUUIDs } from "@/lib/tags";
 
 export default function HomePage() {
   const [selectedTagIds, setSelectedTagIds] = React.useState<UUID[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  // Apenas visual (não aplica filtro real nesta etapa)
   const [openOnly, setOpenOnly] = React.useState<boolean>(false);
 
-  // Simula carregamento para demonstrar skeletons (~500ms)
-  React.useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
+  const [tags, setTags] = React.useState<ApiTag[]>([]);
+  const [projects, setProjects] = React.useState<ApiProjectDetailed[]>([]);
+
+  const [loadingTags, setLoadingTags] = React.useState(true);
+  const [loadingProjects, setLoadingProjects] = React.useState(true);
+
+  const [errorTags, setErrorTags] = React.useState<string | null>(null);
+  const [errorProjects, setErrorProjects] = React.useState<string | null>(null);
+
+  // Helpers para mensagens de erro
+  const extractMessage = (err: unknown, fallback: string) => {
+    const ax = err as AxiosError<{ message?: string; error?: string }>;
+    return ax?.response?.data?.message || ax?.response?.data?.error || (err as Error)?.message || fallback;
+  };
+
+  const loadTags = React.useCallback(async () => {
+    setLoadingTags(true);
+    setErrorTags(null);
+    try {
+      const data = await getTags();
+      setTags(data);
+    } catch (err) {
+      setErrorTags(extractMessage(err, "Falha ao carregar tags"));
+    } finally {
+      setLoadingTags(false);
+    }
   }, []);
+
+  const loadProjects = React.useCallback(
+    async (filter?: ProjectQueryFilter) => {
+      setLoadingProjects(true);
+      setErrorProjects(null);
+      try {
+        const data = await getProjects(filter);
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setErrorProjects(extractMessage(err, "Falha ao carregar projetos"));
+      } finally {
+        setLoadingProjects(false);
+      }
+    },
+    []
+  );
+
+  // Carrega tags na montagem
+  React.useEffect(() => {
+    void loadTags();
+  }, [loadTags]);
+
+  // Carrega projetos sempre que filtros mudarem
+  React.useEffect(() => {
+  const safeTagIds = dedupeUUIDs(selectedTagIds);
+
+  const filter: ProjectQueryFilter | undefined =
+    safeTagIds.length > 0 || openOnly
+      ? {
+          tagIds: safeTagIds.length > 0 ? safeTagIds : undefined,
+          openForApplications: openOnly ? true : undefined,
+        }
+      : undefined;
+
+  void loadProjects(filter);
+}, [selectedTagIds, openOnly, loadProjects]);
 
   const onToggleTag = React.useCallback((id: UUID) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
-    );
+    setSelectedTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
   }, []);
 
-  // Filtragem AND: se nenhuma tag selecionada, retorna todos;
-  // caso contrário, o projeto deve conter TODAS as tags selecionadas.
-  const filteredProjects = React.useMemo(() => {
-    if (selectedTagIds.length === 0) return projects;
-    return projects.filter((p) =>
-      selectedTagIds.every((tid) => p.tagIds.includes(tid))
-    );
-  }, [selectedTagIds]);
+  const pageTitle = "UFES • UniLink";
+
+  const isLoadingAll = loadingTags || loadingProjects;
 
   return (
     <>
       <Head>
-        <title>UFES • UniLink</title>
+        <title>{pageTitle}</title>
         <meta name="description" content="UniLink • Portais e projetos da UFES" />
       </Head>
 
@@ -51,13 +105,24 @@ export default function HomePage() {
             Filtros
           </h2>
 
-          {loading ? (
+          {loadingTags ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="h-5 w-24 rounded bg-muted animate-pulse" />
                 <div className="h-5 w-40 rounded bg-muted animate-pulse" />
               </div>
               <TagsSkeleton />
+            </div>
+          ) : errorTags ? (
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">{errorTags}</p>
+              <button
+                type="button"
+                onClick={() => void loadTags()}
+                className="text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+              >
+                Tentar novamente
+              </button>
             </div>
           ) : (
             <TagFilters
@@ -77,20 +142,35 @@ export default function HomePage() {
             Projetos
           </h2>
 
-          {loading ? (
+          {isLoadingAll ? (
             <ProjectsSkeleton count={8} />
-          ) : filteredProjects.length === 0 ? (
+          ) : errorProjects ? (
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">{errorProjects}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  const filter: ProjectQueryFilter | undefined =
+                    selectedTagIds.length > 0 || openOnly
+                      ? {
+                          tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+                          openForApplications: openOnly ? true : undefined,
+                        }
+                      : undefined;
+                  void loadProjects(filter);
+                }}
+                className="text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : projects.length === 0 ? (
             <EmptyState />
           ) : (
-            <ProjectsGrid projects={filteredProjects} centers={centers} tags={tags} />
+            <ProjectsGrid projects={projects} />
           )}
         </section>
       </main>
-
-      {/* TODO (integração backend):
-          - Substituir mocks por GET /api/projects (ProjectController Spring).
-          - Observação: hoje GET /api/projects aceita filtro no body (ProjectQueryFilter),
-            avaliar adequação REST; se necessário, usar POST de busca no futuro. */}
     </>
   );
 }

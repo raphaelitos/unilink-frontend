@@ -1,24 +1,31 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { getReadableTextColor, withAlpha } from "@/lib/colors";
 
 type Props = {
   label: string;
   active?: boolean;
   onToggle?: () => void;
   colorHex?: string;
+  activeBgHex?: string;
 };
+
+function isValidHex(hex?: string): boolean {
+  return !!hex && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex);
+}
+
+function safeHex(hex?: string): string {
+  return isValidHex(hex) ? (hex as string) : "#6b7280";
+}
 
 export const TagChip = React.memo(function TagChip({
   label,
   active = false,
   onToggle,
   colorHex,
+  activeBgHex,
 }: Props) {
-  const bg = colorHex ? withAlpha(colorHex, active ? 0.25 : 0.15) : undefined;
-  const textColor =
-    colorHex ? (getReadableTextColor(colorHex) === "white" ? "white" : "black") : undefined;
-  const borderColor = colorHex ? withAlpha(colorHex, 0.35) : undefined;
+  const baseBg = safeHex(colorHex);
+  const bg = active && isValidHex(activeBgHex) ? (activeBgHex as string) : baseBg;
 
   return (
     <Button
@@ -29,15 +36,11 @@ export const TagChip = React.memo(function TagChip({
       aria-pressed={active}
       aria-label={`${active ? "Remover" : "Adicionar"} filtro: ${label}`}
       className="rounded-full px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      style={
-        colorHex
-          ? {
-              backgroundColor: bg,
-              color: textColor,
-              borderColor: borderColor,
-            }
-          : undefined
-      }
+      style={{
+        backgroundColor: bg,
+        color: "#fff",
+        borderColor: "transparent",
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
