@@ -113,7 +113,6 @@ export default function CadastrarProjetoPage() {
 
   const imgUrl = watch("imgUrl");
   const selectedTags = watch("tagsToBeAdded");
-  const removedTags = watch("tagsToBeRemoved");
 
   // Fetch centers
   const fetchCenters = React.useCallback(async () => {
