@@ -51,6 +51,8 @@ export const TagFilters: React.FC<Props> = ({
               active={active}
               onToggle={() => onToggleTag(t.id)}
               colorHex={t.colorHex}
+              /* <- cor quando selecionada na Home */
+              activeBgHex="#4D47C3"
             />
           );
         })}

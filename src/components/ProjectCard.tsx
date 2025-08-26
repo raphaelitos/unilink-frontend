@@ -9,6 +9,10 @@ type Props = {
   project: ApiProjectDetailed;
 };
 
+function safeHex(hex?: string): string {
+  return hex && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex) ? hex : "#6b7280";
+}
+
 export const ProjectCard: React.FC<Props> = ({ project }) => {
   const tags = project.tags ?? [];
   const visibleTags = tags.slice(0, 3);
@@ -56,19 +60,23 @@ export const ProjectCard: React.FC<Props> = ({ project }) => {
 
           <div className="flex items-center justify-between text-sm">
             <div className="flex flex-wrap gap-2">
-              {visibleTags.map((t) => (
-                <Badge
-                  key={t.id}
-                  variant="outline"
-                  style={{
-                    backgroundColor: `${t.colorHex}20`,
-                    borderColor: `${t.colorHex}55`,
-                  }}
-                  aria-label={`Tag ${t.name}`}
-                >
-                  {t.name}
-                </Badge>
-              ))}
+              {visibleTags.map((t) => {
+                const bg = safeHex(t.colorHex);
+                return (
+                  <Badge
+                    key={t.id}
+                    className="border rounded-full"
+                    style={{
+                      backgroundColor: bg,
+                      color: "#fff",
+                      borderColor: "transparent",
+                    }}
+                    aria-label={`Tag ${t.name}`}
+                  >
+                    {t.name}
+                  </Badge>
+                );
+              })}
               {extra > 0 && (
                 <Badge variant="secondary" aria-label={`Mais ${extra} tags`}>
                   +{extra}

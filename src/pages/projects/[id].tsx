@@ -13,10 +13,13 @@ import { ProjectDetailSkeleton } from "@/components/Skeletons";
 
 import { getProjectById } from "@/lib/projects";
 import type { ApiProjectDetailed, ApiTag } from "@/types/project";
-import { getReadableTextColor, withAlpha } from "@/lib/colors";
 
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function safeHex(hex?: string): string {
+  return hex && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex) ? hex : "#6b7280";
+}
 
 export default function ProjectDetailPage() {
   const router = useRouter();
@@ -139,15 +142,15 @@ export default function ProjectDetailPage() {
               <div className="flex justify-center mt-3">
                 <div className="flex flex-wrap items-center gap-2">
                   {project.tags.slice(0, 3).map((tag: ApiTag) => {
-                    const textColor = getReadableTextColor(tag.colorHex);
+                    const bg = safeHex(tag.colorHex);
                     return (
                       <span
                         key={tag.id}
                         className="inline-flex items-center rounded-full px-2 py-1 text-xs"
                         style={{
-                          backgroundColor: withAlpha(tag.colorHex, 0.15),
-                          color: textColor === "white" ? "#ffffff" : "#111827",
-                          border: `1px solid ${withAlpha(tag.colorHex, 0.35)}`,
+                          backgroundColor: bg,
+                          color: "#fff",
+                          border: "1px solid transparent",
                         }}
                         aria-label={`Tag ${tag.name}`}
                       >

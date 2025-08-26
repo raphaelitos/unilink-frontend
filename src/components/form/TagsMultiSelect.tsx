@@ -22,6 +22,10 @@ type Props = {
   placeholder?: string;
 };
 
+function safeHex(hex?: string): string {
+  return hex && /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex) ? hex : "#6b7280";
+}
+
 export const TagsMultiSelect: React.FC<Props> = ({ options, value, onChange, placeholder }) => {
   const [open, setOpen] = React.useState(false);
   const selectedSet = React.useMemo(() => new Set(value), [value]);
@@ -79,7 +83,7 @@ export const TagsMultiSelect: React.FC<Props> = ({ options, value, onChange, pla
                       >
                         <span
                           className="inline-block h-3 w-3 rounded-full border"
-                          style={{ backgroundColor: t.colorHex, borderColor: t.colorHex }}
+                          style={{ backgroundColor: safeHex(t.colorHex), borderColor: safeHex(t.colorHex) }}
                           aria-hidden
                         />
                         <span className="flex-1">{t.name}</span>
@@ -96,29 +100,36 @@ export const TagsMultiSelect: React.FC<Props> = ({ options, value, onChange, pla
 
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2" role="listbox" aria-multiselectable>
-          {selectedTags.map((t) => (
-            <Badge
-              key={t.id}
-              variant="secondary"
-              className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs"
-              role="option"
-              aria-selected
-            >
-              <span
-                className="inline-block h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: t.colorHex }}
-              />
-              {t.name}
-              <button
-                type="button"
-                onClick={() => toggle(t.id)}
-                className="ml-1 inline-flex"
-                aria-label={`Remover ${t.name}`}
+          {selectedTags.map((t) => {
+            const bg = safeHex(t.colorHex);
+            return (
+              <Badge
+                key={t.id}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs"
+                role="option"
+                aria-selected
+                style={{
+                  backgroundColor: bg,
+                  color: "#fff",
+                  borderColor: "transparent",
+                }}
               >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "#fff", opacity: 0.8 }}
+                />
+                {t.name}
+                <button
+                  type="button"
+                  onClick={() => toggle(t.id)}
+                  className="ml-1 inline-flex"
+                  aria-label={`Remover ${t.name}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            );
+          })}
           <Button type="button" variant="ghost" size="sm" onClick={clear}>
             Limpar
           </Button>
