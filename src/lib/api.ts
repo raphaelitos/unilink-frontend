@@ -10,6 +10,7 @@ import type {
   CreateProjectRequest,
   ApiProjectDetailed as ProjectResponse,
 } from "@/types/project";
+import type { ApiUser, UUID } from "@/types/project";
 
 const AUTH_COOKIE = "auth-token";
 
@@ -87,5 +88,11 @@ export async function createProject(
   // que usam apenas o "id" para redirecionar. Se quiser alinhar ao OpenAPI (Project detalhado),
   // ajuste o tipo de retorno para ApiProjectDetailed.
   const { data } = await api.post<ProjectResponse>("/api/projects", payload);
+  return data;
+}
+
+
+export async function getUserById(id: UUID): Promise<ApiUser> {
+  const { data } = await api.get<ApiUser>(`/api/users/${id}`);
   return data;
 }
