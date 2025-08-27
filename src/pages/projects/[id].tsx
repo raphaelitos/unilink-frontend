@@ -14,6 +14,8 @@ import { ProjectDetailSkeleton } from "@/components/Skeletons";
 import { getProjectById } from "@/lib/projects";
 import type { ApiProjectDetailed, ApiTag } from "@/types/project";
 
+import { FloatingEditButton } from "@/components/FloatingEditButton";
+
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -183,6 +185,7 @@ export default function ProjectDetailPage() {
             <Separator className="my-8" />
 
             <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
+              {/* Imagem */}
               <div className="w-full">
                 <div className="relative w-full rounded-3xl shadow-sm overflow-hidden aspect-square md:aspect-[4/3]">
                   {project.imgUrl ? (
@@ -202,7 +205,9 @@ export default function ProjectDetailPage() {
                 </div>
               </div>
 
+              {/* Coluna lateral */}
               <div className="space-y-6">
+                {/* Descrição */}
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Descrição</div>
                   <Card className="rounded-2xl shadow-sm">
@@ -212,6 +217,7 @@ export default function ProjectDetailPage() {
                   </Card>
                 </div>
 
+                {/* Departamento */}
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">Departamento</div>
                   <Card className="rounded-2xl shadow-sm">
@@ -219,6 +225,25 @@ export default function ProjectDetailPage() {
                       <p className="text-base leading-relaxed">
                         {project.center?.name ?? "—"}
                       </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Responsável (email) — usa o owner do próprio Project */}
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Coordenador(a) (contato)</div>
+                  <Card className="rounded-2xl shadow-sm">
+                    <CardContent className="p-4">
+                      {project.owner?.email ? (
+                        <a
+                          href={`mailto:${project.owner.email}`}
+                          className="text-base leading-relaxed underline underline-offset-4"
+                        >
+                          {project.owner.email}
+                        </a>
+                      ) : (
+                        <p className="text-base leading-relaxed">—</p>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -236,6 +261,13 @@ export default function ProjectDetailPage() {
             </div>
           </>
         )}
+        {project && (
+          <FloatingEditButton
+            projectId={project.id}
+            ownerId={project.owner?.id}
+          />
+        )}
+
       </main>
     </>
   );

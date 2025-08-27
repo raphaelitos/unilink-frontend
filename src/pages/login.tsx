@@ -52,7 +52,12 @@ export default function LoginPage() {
       await login(payload, true /* useExtendedBody */);
 
       toast({ title: "Login realizado!" });
-      router.push("/");
+      const rt = Array.isArray(router.query.returnTo)
+        ? router.query.returnTo[0]
+        : router.query.returnTo;
+
+      router.push(typeof rt === "string" && rt.startsWith("/") ? rt : "/");
+
     } catch (error: unknown) {
       let message: string;
 
@@ -160,7 +165,7 @@ export default function LoginPage() {
                 </Link>{' '}
               </p>
             </div>
-            
+
 
           </div>
 
