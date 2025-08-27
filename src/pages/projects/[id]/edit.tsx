@@ -394,21 +394,6 @@ export default function EditProjectPage() {
                   </div>
                 </TooltipProvider>
 
-                <div className="mt-4 space-y-2">
-                  <Label htmlFor="imgUrl" className="text-sm text-muted-foreground">
-                    URL da imagem (persistida)
-                  </Label>
-                  <Input
-                    id="imgUrl"
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    aria-invalid={!!errors.imgUrl}
-                    {...register("imgUrl")}
-                  />
-                  {errors.imgUrl && (
-                    <p className="text-sm text-destructive">{errors.imgUrl.message}</p>
-                  )}
-                </div>
-
                 {/* Campos ocultos controlados pelo file chooser */}
                 <input type="hidden" {...register("imageBase64")} />
                 <input type="hidden" {...register("imageContentType")} />

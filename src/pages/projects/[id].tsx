@@ -14,6 +14,8 @@ import { ProjectDetailSkeleton } from "@/components/Skeletons";
 import { getProjectById } from "@/lib/projects";
 import type { ApiProjectDetailed, ApiTag } from "@/types/project";
 
+import { FloatingEditButton } from "@/components/FloatingEditButton";
+
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -259,6 +261,13 @@ export default function ProjectDetailPage() {
             </div>
           </>
         )}
+        {project && (
+          <FloatingEditButton
+            projectId={project.id}
+            ownerId={project.owner?.id}
+          />
+        )}
+
       </main>
     </>
   );
