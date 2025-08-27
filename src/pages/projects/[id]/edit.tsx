@@ -489,21 +489,6 @@ export default function EditProjectPage() {
               )}
             </div>
 
-            {/* Tags a remover (apenas visual; será ignorado no submit) */}
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Remover tags</Label>
-              {loadingTags ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <TagsMultiSelect
-                  options={tags}
-                  value={removedTags}
-                  onChange={(vals) => setValue("tagsToBeRemoved", vals)}
-                  placeholder="Selecione tags para remover…"
-                />
-              )}
-            </div>
-
             {/* Owner */}
             <div className="space-y-2">
               <Label htmlFor="ownerId" className="text-sm text-muted-foreground">
